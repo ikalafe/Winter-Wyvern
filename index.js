@@ -1,50 +1,22 @@
 require("dotenv").config();
 
 const express = require("express");
+const path = require("path");
+
 const sequelize = require("./database/sequelize-connect");
-const User = require("./models/user.model");
+const authRoutes = require("./routes/auth.route");
+
 const app = express();
 const port = 2000;
 
-app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use("/auth", authRoutes);
+
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
 app.get("/", async (req, res) => {
-  const users = await User.findAll();
-  res.send(users);
-});
-
-app.post("/login", async (req, res) => {
-  const { password, email } = req.body;
-
-  console.log({ email });
-
-  const user = await User.findOne({
-    where: {
-      email,
-    },
-  });
-
-  console.log({ user });
-
-  if (user) {
-    if (user.password == password) {
-      res.send("Hi to pannel");
-    } else {
-      res.send("The password is incorrect!");
-    }
-  } else {
-    res.send("User Not Found!!!");
-  }
-});
-
-app.get("/create-user", async (req, res) => {
-  const user = await User.create({
-    firstName: "Daniyal",
-    lastName: "Dehghan",
-    password: "danikalafe",
-    email: "imkalafe@gmail.com",
-  });
-  res.send({ user });
+  res.send({ message: "Welcome" });
 });
 
 app.listen(port, async () => {
