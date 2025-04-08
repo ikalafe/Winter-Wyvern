@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register</title>
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <!-- استایل سفارشی برای زیباتر شدن -->
+    <style>
+      body {
+        background-color: #f1f3f5;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .register-card {
+        max-width: 400px;
+        width: 100%;
+        padding: 2rem;
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      .register-card h2 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #343a40;
+      }
+      .btn-primary {
+        background-color: #007bff;
+        border: none;
+        transition: background-color 0.3s;
+      }
+      .btn-primary:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="register-card">
+      <h2>Register</h2>
+
+      <!-- نمایش پیام موفقیت -->
+      <% if (successMessage) { %>
+      <div class="alert alert-success" role="alert"><%= successMessage %></div>
+      <% } %>
+
+      <!-- نمایش پیام خطا -->
+      <% if (errorMessage) { %>
+      <div class="alert alert-danger" role="alert"><%= errorMessage %></div>
+      <% } %>
+
+      <!-- فرم ثبت‌نام (فقط اگه ثبت‌نام نشده باشه نشون داده بشه) -->
+      <% if (!successMessage) { %>
+      <form action="/auth/register" method="POST">
+        <!-- فیلد نام -->
+        <div class="mb-3">
+          <label for="firstName" class="form-label">First Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="firstName"
+            name="firstName"
+            placeholder="Your first name"
+            required
+          />
+        </div>
+        <!-- فیلد نام خانوادگی -->
+        <div class="mb-3">
+          <label for="lastName" class="form-label">Last Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="lastName"
+            name="lastName"
+            placeholder="Your last name"
+            required
+          />
+        </div>
+        <!-- فیلد ایمیل -->
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            name="email"
+            placeholder="your@email.com"
+            required
+          />
+        </div>
+        <!-- فیلد رمز عبور -->
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            name="password"
+            placeholder="********"
+            required
+          />
+        </div>
+        <!-- دکمه ثبت‌نام -->
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary">Register</button>
+        </div>
+      </form>
+      <!-- لینک به صفحه‌ی لاگین -->
+      <div class="text-center mt-3">
+        <p>Already have an account? <a href="/auth/login">Login here</a></p>
+      </div>
+      <% } %>
+    </div>
+
+    <!-- Bootstrap 5 JS (اختیاری) -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
