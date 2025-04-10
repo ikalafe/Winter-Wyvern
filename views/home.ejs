@@ -12,7 +12,7 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
-    <!-- اضافه کردن Bootstrap Icons (درخواست دوم) -->
+    <!-- اضافه کردن Bootstrap Icons -->
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
@@ -22,13 +22,13 @@
       body {
         background-color: #f1f3f5;
         min-height: 100vh;
-        padding: 0; /* حذف padding از body */
+        padding: 0;
       }
       .container {
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: calc(100vh - 56px); /* تنظیم ارتفاع با احتساب navbar */
+        min-height: calc(100vh - 56px);
         padding: 2rem;
       }
       .users-card {
@@ -59,32 +59,53 @@
       .btn-primary:hover {
         background-color: #0056b3;
       }
+      /* تغییر: استایل برای حالت لودینگ دکمه جستجو */
+      .btn-primary.loading .spinner-border {
+        display: inline-block;
+      }
+      .btn-primary.loading .btn-text {
+        display: none;
+      }
+      .spinner-border {
+        display: none;
+        width: 1rem;
+        height: 1rem;
+        vertical-align: middle;
+      }
     </style>
   </head>
   <body>
-    <!-- اضافه کردن نوار ناوبری (درخواست دوم) -->
+    <!-- اضافه کردن نوار ناوبری -->
     <%- include('_navbar') %>
 
     <!-- اضافه کردن container برای وسط‌چین کردن کارت -->
     <div class="container">
       <div class="users-card">
-        <!-- نمایش اسم کاربر لاگین‌شده (درخواست دوم) -->
+        <!-- نمایش اسم کاربر لاگین‌شده -->
         <% if (user) { %>
         <p class="text-end">Welcome, <%= user.firstName %>!</p>
         <% } %>
 
         <h2>Home</h2>
 
-        <!-- نمایش پیام خطا با انیمیشن (درخواست دوم) -->
-        <% if (errorMessage) { %>
+        <!-- تغییر: اضافه کردن شرط نمایش پیام موفقیت -->
+        <% if (successMessage || (typeof success !== 'undefined' && success)) {
+        %>
+        <div class="alert alert-success fade show" role="alert">
+          <%= successMessage || success %>
+        </div>
+        <% } %>
+
+        <!-- نمایش پیام خطا با انیمیشن -->
+        <% if (errorMessage || (typeof error !== 'undefined' && error)) { %>
         <div class="alert alert-danger fade show" role="alert">
-          <%= errorMessage %>
+          <%= errorMessage || error %>
         </div>
         <% } %>
 
         <!-- فرم جستجو -->
         <div class="search-bar">
-          <form action="/home/search" method="GET">
+          <form action="/home/search" method="GET" id="searchForm">
             <div class="input-group">
               <input
                 type="text"
@@ -93,9 +114,16 @@
                 placeholder="Search by name or email..."
                 value="<%= searchQuery || '' %>"
               />
-              <!-- اضافه کردن آیکون به دکمه جستجو (درخواست دوم) -->
+              <!-- تغییر: اضافه کردن spinner و متن دکمه برای حالت لودینگ -->
               <button type="submit" class="btn btn-primary">
-                <i class="bi bi-search"></i> Search
+                <span
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                <span class="btn-text"
+                  ><i class="bi bi-search"></i> Search</span
+                >
               </button>
             </div>
           </form>
@@ -131,7 +159,7 @@
         <div class="alert alert-info" role="alert">No users found.</div>
         <% } %>
 
-        <!-- دکمه‌های پروفایل و لاگ‌اوت (درخواست اول) -->
+        <!-- دکمه‌های پروفایل و لاگ‌اوت -->
         <div class="text-center mt-3">
           <a href="/user/profile" class="btn btn-outline-primary"
             >Go to Profile</a
@@ -141,11 +169,36 @@
       </div>
     </div>
 
-    <!-- Bootstrap 5 JS (اختیاری) -->
+    <!-- Bootstrap 5 JS -->
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
+    <!-- تغییر: جاوااسکریپت برای پاک کردن پارامترهای URL و مدیریت حالت لودینگ -->
+    <script>
+      // گرفتن پارامترهای error و success از URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get("error");
+      const success = urlParams.get("success");
+
+      // اگر پارامترها وجود داشته باشند، از URL پاک می‌شوند
+      if (error || success) {
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
+      }
+
+      // مدیریت حالت لودینگ برای دکمه جستجو
+      const searchForm = document.getElementById("searchForm");
+      const searchButton = searchForm.querySelector("button[type='submit']");
+
+      searchForm.addEventListener("submit", () => {
+        searchButton.classList.add("loading");
+        searchButton.disabled = true;
+      });
+    </script>
   </body>
 </html>
