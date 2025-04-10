@@ -7,13 +7,15 @@ const cookieParser = require("cookie-parser");
 const sequelize = require("./database/sequelize-connect");
 const authRoutes = require("./routes/auth.route");
 const userRoutes = require("./routes/user.route");
-const homeRoutes = require("./routes/home.route")
+const homeRoutes = require("./routes/home.route");
 
 const app = express();
 const port = 2000;
 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "statics")));
+
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/home", homeRoutes);
