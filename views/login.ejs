@@ -22,13 +22,13 @@
       body {
         background-color: #f1f3f5;
         min-height: 100vh;
-        padding: 0; /* حذف padding از body */
+        padding: 0;
       }
       .container {
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: calc(100vh - 56px); /* تنظیم ارتفاع با احتساب navbar */
+        min-height: calc(100vh - 56px);
         padding: 2rem;
       }
       .login-card {
@@ -52,12 +52,18 @@
       .btn-primary:hover {
         background-color: #0056b3;
       }
-      .btn-outline-secondary {
-        transition: background-color 0.3s, color 0.3s;
+      /* تغییر: استایل برای حالت لودینگ */
+      .btn-primary.loading .spinner-border {
+        display: inline-block;
       }
-      .btn-outline-secondary:hover {
-        background-color: #6c757d;
-        color: white;
+      .btn-primary.loading .btn-text {
+        display: none;
+      }
+      .spinner-border {
+        display: none;
+        width: 1rem;
+        height: 1rem;
+        vertical-align: middle;
       }
     </style>
   </head>
@@ -71,22 +77,22 @@
         <h2>Login</h2>
 
         <!-- نمایش پیام موفقیت -->
-        <% if (successMessage) { %>
+        <% if (successMessage || (typeof success !== 'undefined' && success)) {
+        %>
         <div class="alert alert-success fade show" role="alert">
-          <%= successMessage %>
+          <%= successMessage || success %>
         </div>
         <% } %>
 
         <!-- نمایش پیام خطا -->
-        <% if (errorMessage) { %>
+        <% if (errorMessage || (typeof error !== 'undefined' && error)) { %>
         <div class="alert alert-danger fade show" role="alert">
-          <%= errorMessage %>
+          <%= errorMessage || error %>
         </div>
         <% } %>
 
-        <!-- فرم لاگین (فقط اگه لاگین نشده باشه نشون داده بشه) -->
-        <% if (!successMessage) { %>
-        <form action="/auth/login" method="POST">
+        <!-- فرم لاگین -->
+        <form action="/auth/login" method="POST" id="loginForm">
           <!-- فیلد ایمیل -->
           <div class="mb-3">
             <label for="email" class="form-label">Email</label>
@@ -111,27 +117,36 @@
               required
             />
           </div>
-          <div class="text-end mb-3">
-            <a href="/auth/forget-password">Forget Password?</a>
-          </div>
-          <!-- دکمه ورود با آیکون -->
+          <!-- دکمه لاگین -->
           <div class="d-grid">
             <button type="submit" class="btn btn-primary">
-              <i class="bi bi-box-arrow-in-right"></i> Login
+              <span
+                class="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              <span class="btn-text"
+                ><i class="bi bi-box-arrow-in-right"></i> Login</span
+              >
             </button>
           </div>
         </form>
-
-        <!-- لینک به صفحه ثبت‌نام -->
+        <!-- لینک به صفحه‌ی ثبت‌نام -->
         <div class="text-center mt-3">
           <p>
             Don't have an account?
-            <a href="/auth/register" class="btn btn-outline-secondary">
-              Create Account
-            </a>
+            <a href="/auth/register" class="btn btn-outline-secondary"
+              >Create Account</a
+            >
           </p>
         </div>
-        <% } %>
+        <!-- لینک به صفحه‌ی فراموشی رمز -->
+        <div class="text-center mt-2">
+          <p>
+            Forgot your password?
+            <a href="/auth/forget-password">Reset Password</a>
+          </p>
+        </div>
       </div>
     </div>
 
@@ -141,5 +156,25 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
+    <!-- جاوااسکریپت برای گرفتن پارامترهای URL و مدیریت حالت لودینگ -->
+    <script>
+      // گرفتن پارامترهای error و success از URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get("error");
+      const success = urlParams.get("success");
+
+      if (error || success) {
+        window.history.replaceState({}, document.title, "/auth/login");
+      }
+
+      // تغییر: مدیریت حالت لودینگ برای دکمه لاگین
+      const loginForm = document.getElementById("loginForm");
+      const loginButton = loginForm.querySelector("button[type='submit']");
+
+      loginForm.addEventListener("submit", () => {
+        loginButton.classList.add("loading");
+        loginButton.disabled = true;
+      });
+    </script>
   </body>
 </html>
