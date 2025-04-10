@@ -23,28 +23,45 @@ function generateResetToken() {
 }
 
 router.get("/login", (req, res) => {
-  res.render("login", { errorMessage: null, successMessage: null, user: null });
+  const errorMessage = req.query.error || null;
+  res.render("login", {
+    errorMessage: errorMessage,
+    successMessage: null,
+    user: null,
+  });
 });
 
 router.get("/register", (req, res) => {
-  res.render("register", { errorMessage: null, successMessage: null });
+  res.render("register", {
+    errorMessage: null,
+    successMessage: null,
+    user: null,
+  });
 });
 
 router.get("/forget-password", (req, res) => {
-  res.render("forget-password", { errorMessage: null, successMessage: null });
+  res.render("forget-password", {
+    errorMessage: null,
+    successMessage: null,
+    user: null,
+  });
 });
 
 router.get("/forget-password/:token", (req, res) => {
   res.render("password-change", {
     errorMessage: null,
     successMessage: null,
+    user: null,
     token: req.params.token,
   });
 });
 
 router.get("/logout", (req, res) => {
   res.clearCookie("token");
-  res.redirect("/auth/login");
+  res.redirect(
+    "/auth/login?success=" +
+      encodeURIComponent("You have been logged out successfully.")
+  );
 });
 
 router.post("/login", async (req, res) => {
@@ -72,28 +89,36 @@ router.post("/login", async (req, res) => {
         path: "/",
       });
 
-      res.redirect("/home");
+      res.redirect(
+        "/home?success=" +
+          encodeURIComponent(
+            "Login successful! Welcome back, " + user.firstName + "!"
+          )
+      );
     } else {
       res.render("login", {
         errorMessage: "The password is incorrect!",
         successMessage: null,
+        user: null,
       });
     }
   } else {
     res.render("login", {
       errorMessage: "User Not Found!!!",
       successMessage: null,
+      user: null,
     });
   }
 });
 
 router.post("/register", async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password, username } = req.body;
 
-  if (!firstName || !lastName || !email || !password) {
+  if (!firstName || !lastName || !email || !password || !username) {
     return res.render("register", {
       errorMessage: "All fields are required!",
       successMessage: null,
+      user: null,
     });
   }
 
@@ -103,6 +128,16 @@ router.post("/register", async (req, res) => {
       return res.render("register", {
         errorMessage: "This email is already registered!",
         successMessage: null,
+        user: null,
+      });
+    }
+
+    const existingUsername = await User.findOne({ where: { username } });
+    if (existingUsername) {
+      return res.render("register", {
+        errorMessage: "This Username is already registered!",
+        successMessage: null,
+        user: null,
       });
     }
 
@@ -111,17 +146,19 @@ router.post("/register", async (req, res) => {
       lastName: lastName,
       email: email,
       password: password,
+      username: username,
     });
 
-    // res.render("register", {
-    //   errorMessage: null,
-    //   successMessage: `Welcome, ${user.firstName}! Your account has been created successfully. 🎉`,
-    // });
-    res.redirect("/auth/login");
+    res.redirect(
+      "/auth/login?success=" +
+        encodeURIComponent("Registration successful! Please login to continue.")
+    );
   } catch (error) {
+    console.log("Error during registration:", error); // لاگ کردن خطا برای دیباگ
     res.render("register", {
       errorMessage: "An error occurred while registering. Please try again.",
       successMessage: null,
+      user: null,
     });
   }
 });
@@ -133,14 +170,9 @@ router.post("/forget-password", async (req, res) => {
     return res.render("forget-password", {
       errorMessage: "Please enter your email!",
       successMessage: null,
+      user: null,
     });
   }
-
-  const user = await User.findOne({
-    where: {
-      email,
-    },
-  });
 
   try {
     const user = await User.findOne({
@@ -153,29 +185,29 @@ router.post("/forget-password", async (req, res) => {
       return res.render("forget-password", {
         errorMessage: "No user found with this email!",
         successMessage: null,
+        user: null,
       });
     }
 
-    // ساخت توکن ریست رمز
     const token = await generateResetToken();
     console.log("Generated Token:", token);
 
-    // ذخیره توکن در دیتابیس
     await ResetPassword.create({
       email,
       token,
     });
 
-    // نمایش پیام موفقیت
     return res.render("forget-password", {
       errorMessage: null,
       successMessage: "A password reset link has been sent to your email! 📧",
+      user: null,
     });
   } catch (error) {
     console.log("Error:", error);
     return res.render("forget-password", {
       errorMessage: "An error occurred. Please try again.",
       successMessage: null,
+      user: null,
     });
   }
 });
@@ -190,6 +222,7 @@ router.post("/forget-password/:token", async (req, res) => {
       errorMessage: "Please fill in all fields!",
       successMessage: null,
       token,
+      user: null,
     });
   }
 
@@ -199,6 +232,7 @@ router.post("/forget-password/:token", async (req, res) => {
       errorMessage: "Passwords do not match!",
       successMessage: null,
       token,
+      user: null,
     });
   }
 
@@ -213,6 +247,7 @@ router.post("/forget-password/:token", async (req, res) => {
         errorMessage: "Invalid token. Please request a new link.",
         successMessage: null,
         token,
+        user: null,
       });
     }
 
@@ -227,28 +262,26 @@ router.post("/forget-password/:token", async (req, res) => {
         errorMessage: "User not found. Please request a new link.",
         successMessage: null,
         token,
+        user: null,
       });
     }
-
-    // تغییر رمز
     user.password = password;
     await user.save();
-
-    // حذف توکن بعد از استفاده
     await resetPassword.destroy();
 
-    // نمایش پیام موفقیت
     res.render("password-change", {
       errorMessage: null,
       successMessage:
         "Password changed successfully! You will be redirected to login.",
       token,
+      user: null,
     });
   } catch (error) {
     res.render("password-change", {
       errorMessage: "An error occurred. Please try again.",
       successMessage: null,
       token,
+      user: null,
     });
   }
 });
