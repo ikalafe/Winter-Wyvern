@@ -2,33 +2,20 @@ const express = require("express");
 const router = express.Router();
 const { Op } = require("sequelize");
 const User = require("../models/user.model");
-const jwt = require("jsonwebtoken");
+const { requireAuth } = require("../middlewares/auth.middleware");
 
-const checkAuth = (req, res, next) => {
-  const token = req.cookies.token;
-  const secretKey = process.env.JWT_SECRET_KEY;
-
-  if (!token) {
-    return res.redirect("/auth/login");
-  }
-
-  try {
-    const decoded = jwt.verify(token, secretKey);
-    req.userId = decoded.id;
-    next();
-  } catch (error) {
-    return res.redirect("/auth/login");
-  }
-};
-
-router.get("/", checkAuth, async (req, res) => {
+router.get("/", requireAuth, async (req, res) => {
   try {
     const users = await User.findAll();
     const loggedInUser = await User.findOne({ where: { id: req.userId } });
 
+    const successMessage = req.query.success || null;
+    const errorMessage = req.query.error || null;
+
     res.render("home", {
       users: users,
-      errorMessage: null,
+      errorMessage: errorMessage,
+      successMessage: successMessage,
       searchQuery: "",
       user: loggedInUser,
     });
@@ -44,7 +31,7 @@ router.get("/", checkAuth, async (req, res) => {
   }
 });
 
-router.get("/search",checkAuth, async (req, res) => {
+router.get("/search", requireAuth, async (req, res) => {
   try {
     const searchQuery = req.query.search || "";
     console.log("Search Query:", searchQuery);
@@ -61,9 +48,13 @@ router.get("/search",checkAuth, async (req, res) => {
     console.log("Found Users:", users);
     const loggedInUser = await User.findOne({ where: { id: req.userId } });
 
+    const successMessage = req.query.success || null;
+    const errorMessage = req.query.error || null;
+
     res.render("home", {
       users: users,
-      errorMessage: null,
+      errorMessage: errorMessage,
+      successMessage: successMessage,
       searchQuery: searchQuery,
       user: loggedInUser,
     });
