@@ -17,6 +17,27 @@ const User = sequelize.define("User", {
   email: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
+    require: true,
+    set(value) {
+      this.setDataValue("email", value ? value.toLowerCase() : "");
+    },
+    validate: {
+      isEmail: true,
+    },
+  },
+  username: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    require: true,
+    set(value) {
+      this.setDataValue("username", value ? value.toLowerCase() : "");
+    },
+  },
+  bio: {
+    type: DataTypes.STRING,
+    allowNull: true,
   },
 });
 
