@@ -23,7 +23,7 @@ function generateResetToken() {
 }
 
 router.get("/login", (req, res) => {
-  res.render("login", { errorMessage: null, successMessage: null });
+  res.render("login", { errorMessage: null, successMessage: null, user: null });
 });
 
 router.get("/register", (req, res) => {
