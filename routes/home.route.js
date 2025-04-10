@@ -44,7 +44,7 @@ router.get("/", checkAuth, async (req, res) => {
   }
 });
 
-router.get("/search", async (req, res) => {
+router.get("/search",checkAuth, async (req, res) => {
   try {
     const searchQuery = req.query.search || "";
     console.log("Search Query:", searchQuery);
