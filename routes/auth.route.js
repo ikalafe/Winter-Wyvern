@@ -42,6 +42,11 @@ router.get("/forget-password/:token", (req, res) => {
   });
 });
 
+router.get("/logout", (req, res) => {
+  res.clearCookie("token");
+  res.redirect("/auth/login");
+});
+
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const secretKey = process.env.JWT_SECRET_KEY;
@@ -67,7 +72,7 @@ router.post("/login", async (req, res) => {
         path: "/",
       });
 
-      res.redirect("/user/profile");
+      res.redirect("/home");
     } else {
       res.render("login", {
         errorMessage: "The password is incorrect!",
