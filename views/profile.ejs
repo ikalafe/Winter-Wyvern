@@ -12,55 +12,77 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
+    <!-- اضافه کردن Bootstrap Icons -->
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
     />
+    <!-- استایل سفارشی برای زیباتر شدن -->
     <style>
       body {
         background-color: #f1f3f5;
         min-height: 100vh;
-        padding: 0; /* حذف padding از body */
+        padding: 0;
       }
       .container {
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: calc(100vh - 56px); /* تنظیم ارتفاع با احتساب navbar */
+        min-height: calc(100vh - 56px);
         padding: 2rem;
       }
       .profile-card {
-        max-width: 400px;
+        max-width: 800px; /* افزایش عرض کارت */
         width: 100%;
         padding: 2rem;
         background-color: white;
         border-radius: 15px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        text-align: center; /* وسط‌چین کردن محتوا */
+        text-align: center;
       }
       .profile-card h2 {
         margin-bottom: 1rem;
         color: #343a40;
       }
       .profile-card .avatar {
-        font-size: 4rem; /* اندازه آیکون آواتار */
-        color: #007bff; /* رنگ آیکون */
+        font-size: 4rem;
+        color: #007bff;
         margin-bottom: 1rem;
       }
-      .profile-card .info {
-        margin-bottom: 1rem;
-        background-color: #f8f9fa; /* پس‌زمینه روشن برای هر بخش */
-        padding: 0.5rem;
-        border-radius: 5px;
+      .profile-info {
+        display: flex;
+        justify-content: space-between;
+        gap: 2rem;
+        text-align: left;
       }
-      .profile-card .info label {
+      .profile-column {
+        flex: 1;
+      }
+      .profile-column .info {
+        margin-bottom: 1rem;
+      }
+      .profile-column .info label {
         font-weight: bold;
         color: #6c757d;
-        display: block; /* هر label و p در خط جدا */
+        display: block;
       }
-      .profile-card .info p {
-        margin: 0;
+      .profile-column .info input,
+      .profile-column .info textarea {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        background-color: #f8f9fa;
         color: #343a40;
+      }
+      .profile-column .info textarea {
+        resize: none; /* جلوگیری از تغییر اندازه textarea */
+        height: 80px; /* ارتفاع ثابت برای bio */
+      }
+      .profile-column .info input[readonly],
+      .profile-column .info textarea[readonly] {
+        background-color: #e9ecef;
+        border-color: #dee2e6;
       }
       .btn-primary {
         background-color: #007bff;
@@ -70,18 +92,23 @@
       .btn-primary:hover {
         background-color: #0056b3;
       }
+      .btn-secondary {
+        background-color: #6c757d;
+        border: none;
+        transition: background-color 0.3s;
+      }
+      .btn-secondary:hover {
+        background-color: #5a6268;
+      }
     </style>
   </head>
   <body>
-    <!-- اضافه کردن نوار ناوبری -->
     <%- include('_navbar') %>
 
-    <!-- اضافه کردن container برای وسط‌چین کردن کارت -->
     <div class="container">
       <div class="profile-card">
         <h2>User Profile</h2>
 
-        <!-- نمایش آیکون آواتار -->
         <div class="avatar">
           <i class="bi bi-person-circle"></i>
         </div>
@@ -90,47 +117,144 @@
         <% if (errorMessage) { %>
         <div class="alert alert-danger fade show" role="alert">
           <%= errorMessage %>
-          <!-- لینک به صفحه‌ی لاگین اگه احراز هویت نشده -->
-          <% if (errorMessage.includes("Please login")) { %>
-          <div class="text-center mt-2">
-            <a href="/auth/login" class="btn btn-outline-primary"
-              >Go to Login</a
-            >
-          </div>
-          <% } %>
+        </div>
+        <% } %>
+
+        <!-- نمایش پیام موفقیت -->
+        <% if (successMessage) { %>
+        <div class="alert alert-success fade show" role="alert">
+          <%= successMessage %>
         </div>
         <% } %>
 
         <!-- نمایش اطلاعات کاربر -->
         <% if (user) { %>
-        <div class="info">
-          <label>First Name:</label>
-          <p><%= user.firstName %></p>
-        </div>
-        <div class="info">
-          <label>Last Name:</label>
-          <p><%= user.lastName %></p>
-        </div>
-        <div class="info">
-          <label>Email:</label>
-          <p><%= user.email %></p>
-        </div>
-        <div class="info">
-          <label>Joined:</label>
-          <p><%= new Date(user.createdAt).toLocaleDateString() %></p>
-        </div>
+        <form id="profileForm" action="/user/profile" method="POST">
+          <div class="profile-info">
+            <!-- ستون سمت چپ -->
+            <div class="profile-column">
+              <div class="info">
+                <label for="username">Username:</label>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  value="<%= user.username %>"
+                  readonly
+                />
+              </div>
+              <div class="info">
+                <label for="firstName">First Name:</label>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value="<%= user.firstName %>"
+                  readonly
+                />
+              </div>
+              <div class="info">
+                <label for="lastName">Last Name:</label>
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  value="<%= user.lastName %>"
+                  readonly
+                />
+              </div>
+            </div>
 
-        <!-- دکمه ویرایش پروفایل -->
-        <div class="text-center mt-3">
-          <a href="#" class="btn btn-primary">
-            <i class="bi bi-pencil-square"></i> Edit Profile
-          </a>
-        </div>
+            <!-- ستون سمت راست -->
+            <div class="profile-column">
+              <div class="info">
+                <label for="email">Email:</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value="<%= user.email %>"
+                  readonly
+                />
+              </div>
+              <div class="info">
+                <label for="bio">Bio:</label>
+                <textarea id="bio" name="bio" rows="3" readonly>
+<%= user.bio || '' %></textarea
+                >
+              </div>
+              <div class="info">
+                <label>Joined:</label>
+                <p><%= new Date(user.createdAt).toLocaleDateString() %></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- دکمه‌های ویرایش و ذخیره -->
+          <div class="text-center mt-3">
+            <button type="button" id="editButton" class="btn btn-primary">
+              <i class="bi bi-pencil-square"></i> Edit Profile
+            </button>
+            <button
+              type="submit"
+              id="saveButton"
+              class="btn btn-primary d-none"
+            >
+              <i class="bi bi-save"></i> Save Changes
+            </button>
+            <button
+              type="button"
+              id="cancelButton"
+              class="btn btn-secondary d-none"
+            >
+              <i class="bi bi-x-circle"></i> Cancel
+            </button>
+          </div>
+        </form>
         <% } %>
       </div>
     </div>
 
-    <!-- Bootstrap 5 JS (اختیاری) -->
+    <!-- جاوااسکریپت برای مدیریت حالت ویرایش -->
+    <script>
+      const editButton = document.getElementById("editButton");
+      const saveButton = document.getElementById("saveButton");
+      const cancelButton = document.getElementById("cancelButton");
+      const inputs = document.querySelectorAll(
+        "#profileForm input, #profileForm textarea"
+      );
+
+      // ذخیره مقادیر اولیه برای لغو تغییرات
+      const originalValues = {};
+      inputs.forEach((input) => {
+        originalValues[input.id] = input.value;
+      });
+
+      editButton.addEventListener("click", () => {
+        // فعال کردن حالت ویرایش
+        inputs.forEach((input) => {
+          input.removeAttribute("readonly");
+          input.style.backgroundColor = "#fff";
+        });
+        editButton.classList.add("d-none");
+        saveButton.classList.remove("d-none");
+        cancelButton.classList.remove("d-none");
+      });
+
+      cancelButton.addEventListener("click", () => {
+        // لغو تغییرات و برگشت به حالت اولیه
+        inputs.forEach((input) => {
+          input.setAttribute("readonly", "readonly");
+          input.style.backgroundColor = "#e9ecef";
+          input.value = originalValues[input.id];
+        });
+        editButton.classList.remove("d-none");
+        saveButton.classList.add("d-none");
+        cancelButton.classList.add("d-none");
+      });
+    </script>
+
+    <!-- Bootstrap 5 JS -->
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
