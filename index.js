@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const sequelize = require("./database/sequelize-connect");
 const authRoutes = require("./routes/auth.route");
 const userRoutes = require("./routes/user.route");
+const homeRoutes = require("./routes/home.route")
 
 const app = express();
 const port = 2000;
@@ -15,18 +16,19 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
+app.use("/home", homeRoutes);
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 app.get("/", async (req, res) => {
-  res.send({ message: "Welcome" });
+  res.redirect("/home");
 });
 
 app.listen(port, async () => {
   try {
     await sequelize.authenticate();
-    await sequelize.sync({ alter: true }).then(() => {
+    await sequelize.sync().then(() => {
       console.log("All models were synchronized successfully.");
     });
     console.log("Connection has been established successfully!✅");
