@@ -277,4 +277,120 @@ router.post("/create-post", requireAuth, uploadPostCover, async (req, res) => {
   }
 });
 
+router.post(
+  "/edit-post/:postId",
+  requireAuth,
+  uploadPostCover,
+  async (req, res) => {
+    const { postId } = req.params;
+    const { title, content } = req.body;
+
+    if (!title || !content) {
+      return res.render("profile", {
+        errorMessage: "Title and content are required!",
+        successMessage: null,
+        user: await User.findOne({ where: { id: req.userId } }),
+        posts: [],
+      });
+    }
+
+    try {
+      const user = await User.findOne({ where: { id: req.userId } });
+      if (!user) {
+        return res.render("profile", {
+          errorMessage: "User not found.",
+          successMessage: null,
+          user: null,
+          posts: [],
+        });
+      }
+
+      const post = await Post.findOne({
+        where: { id: postId, userId: req.userId },
+      });
+      if (!post) {
+        return res.render("profile", {
+          errorMessage:
+            "Post not found or you don't have permission to edit it.",
+          successMessage: null,
+          user: user,
+          posts: [],
+        });
+      }
+
+      post.title = title;
+      post.content = content;
+
+      if (req.file) {
+        post.cover = `/uploads/${req.file.filename}`;
+      }
+
+      await post.save();
+      const posts = await user.getPosts();
+
+      res.render("profile", {
+        errorMessage: null,
+        successMessage: "Post updated successfully! 🎉",
+        user: user,
+        posts: posts,
+      });
+    } catch (error) {
+      console.log("Error editing post:", error);
+      res.render("profile", {
+        errorMessage: "An error occurred while editing your post.",
+        successMessage: null,
+        user: await User.findOne({ where: { id: req.userId } }),
+        posts: [],
+      });
+    }
+  }
+);
+
+router.post("/delete-post/:postId", requireAuth, async (req, res) => {
+  const { postId } = req.params;
+
+  try {
+    const user = await User.findOne({ where: { id: req.userId } });
+    if (!user) {
+      return res.render("profile", {
+        errorMessage: "User not found.",
+        successMessage: null,
+        user: null,
+        posts: [],
+      });
+    }
+
+    const post = await Post.findOne({
+      where: { id: postId, userId: req.userId },
+    });
+    if (!post) {
+      return res.render("profile", {
+        errorMessage:
+          "Post not found or you don't have permission to delete it.",
+        successMessage: null,
+        user: user,
+        posts: [],
+      });
+    }
+
+    await post.destroy();
+    const posts = await user.getPosts();
+
+    res.render("profile", {
+      errorMessage: null,
+      successMessage: "Post deleted successfully! 🎉",
+      user: user,
+      posts: posts,
+    });
+  } catch (error) {
+    console.log("Error deleting post:", error);
+    res.render("profile", {
+      errorMessage: "An error occurred while deleting your post.",
+      successMessage: null,
+      user: await User.findOne({ where: { id: req.userId } }),
+      posts: [],
+    });
+  }
+});
+
 module.exports = router;
