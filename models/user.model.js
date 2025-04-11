@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../database/sequelize-connect");
+const Post = require("./post.model");
 
 const User = sequelize.define("User", {
   firstName: {
@@ -39,6 +40,13 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  profilePicture: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 });
+
+User.hasMany(Post, { foreignKey: "userId" });
+Post.belongsTo(User, { foreignKey: "userId" });
 
 module.exports = User;
