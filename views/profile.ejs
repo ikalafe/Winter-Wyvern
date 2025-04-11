@@ -32,7 +32,7 @@
         padding: 2rem;
       }
       .profile-card {
-        max-width: 800px; /* افزایش عرض کارت */
+        max-width: 800px;
         width: 100%;
         padding: 2rem;
         background-color: white;
@@ -45,6 +45,14 @@
         color: #343a40;
       }
       .profile-card .avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 1rem;
+        display: block;
+      }
+      .profile-card .avatar-placeholder {
         font-size: 4rem;
         color: #007bff;
         margin-bottom: 1rem;
@@ -76,8 +84,8 @@
         color: #343a40;
       }
       .profile-column .info textarea {
-        resize: none; /* جلوگیری از تغییر اندازه textarea */
-        height: 80px; /* ارتفاع ثابت برای bio */
+        resize: none;
+        height: 80px;
       }
       .profile-column .info input[readonly],
       .profile-column .info textarea[readonly] {
@@ -100,6 +108,139 @@
       .btn-secondary:hover {
         background-color: #5a6268;
       }
+      .btn-danger {
+        background-color: #dc3545;
+        border: none;
+        transition: background-color 0.3s;
+      }
+      .btn-danger:hover {
+        background-color: #c82333;
+      }
+      .upload-section {
+        margin-top: 1rem;
+        text-align: center;
+      }
+      .upload-section input[type="file"] {
+        display: none;
+      }
+      .upload-section label {
+        cursor: pointer;
+        color: #007bff;
+        text-decoration: underline;
+      }
+      .upload-section label:hover {
+        color: #0056b3;
+      }
+      .upload-section .file-name {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        display: none;
+      }
+      .nav-tabs {
+        justify-content: center;
+        margin-bottom: 2rem;
+      }
+      .nav-tabs .nav-link {
+        color: #6c757d;
+        font-weight: 500;
+      }
+      .nav-tabs .nav-link.active {
+        color: #007bff;
+        border-color: #007bff;
+      }
+      .change-password-form {
+        max-width: 400px;
+        margin: 0 auto;
+      }
+      .change-password-form .form-group {
+        margin-bottom: 1rem;
+      }
+      .posts-tab {
+        text-align: left;
+      }
+      .posts-list {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 10px;
+      }
+      .posts-list::-webkit-scrollbar {
+        width: 8px;
+      }
+      .posts-list::-webkit-scrollbar-track {
+        background: #f1f3f5;
+        border-radius: 10px;
+      }
+      .posts-list::-webkit-scrollbar-thumb {
+        background: #007bff;
+        border-radius: 10px;
+      }
+      .posts-list::-webkit-scrollbar-thumb:hover {
+        background: #0056b3;
+      }
+      .post-card {
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s;
+        display: flex;
+        gap: 1rem;
+      }
+      .post-card:hover {
+        transform: translateY(-3px);
+      }
+      .post-card img {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+        flex-shrink: 0;
+      }
+      .post-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .post-content h5 {
+        margin-bottom: 0.5rem;
+        color: #343a40;
+        font-weight: 600;
+      }
+      .post-content p {
+        margin-bottom: 0.5rem;
+        color: #495057;
+        line-height: 1.5;
+      }
+      .post-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .post-meta {
+        display: flex;
+        align-items: center;
+        color: #6c757d;
+        font-size: 0.9rem;
+      }
+      .post-meta i {
+        margin-right: 0.5rem;
+      }
+      .post-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .create-post-form,
+      .edit-post-form {
+        max-width: 500px;
+        margin: 0 auto 2rem;
+      }
+      .create-post-form .form-group,
+      .edit-post-form .form-group {
+        margin-bottom: 1rem;
+      }
     </style>
   </head>
   <body>
@@ -110,7 +251,15 @@
         <h2>User Profile</h2>
 
         <div class="avatar">
-          <i class="bi bi-person-circle"></i>
+          <% if (user && user.profilePicture) { %>
+          <img
+            src="<%= user.profilePicture %>"
+            alt="Profile Picture"
+            class="avatar"
+          />
+          <% } else { %>
+          <i class="bi bi-person-circle avatar-placeholder"></i>
+          <% } %>
         </div>
 
         <!-- نمایش پیام خطا -->
@@ -127,91 +276,409 @@
         </div>
         <% } %>
 
-        <!-- نمایش اطلاعات کاربر -->
-        <% if (user) { %>
-        <form id="profileForm" action="/user/profile" method="POST">
-          <div class="profile-info">
-            <!-- ستون سمت چپ -->
-            <div class="profile-column">
-              <div class="info">
-                <label for="username">Username:</label>
+        <!-- تب‌ها -->
+        <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link active"
+              id="info-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#info"
+              type="button"
+              role="tab"
+              aria-controls="info"
+              aria-selected="true"
+            >
+              Profile Info
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="change-password-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#change-password"
+              type="button"
+              role="tab"
+              aria-controls="change-password"
+              aria-selected="false"
+            >
+              Change Password
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="posts-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#posts"
+              type="button"
+              role="tab"
+              aria-controls="posts"
+              aria-selected="false"
+            >
+              Posts
+            </button>
+          </li>
+        </ul>
+
+        <!-- محتوای تب‌ها -->
+        <div class="tab-content" id="profileTabsContent">
+          <!-- تب اطلاعات پروفایل -->
+          <div
+            class="tab-pane fade show active"
+            id="info"
+            role="tabpanel"
+            aria-labelledby="info-tab"
+          >
+            <% if (user) { %>
+            <form
+              id="profileForm"
+              action="/user/profile"
+              method="POST"
+              enctype="multipart/form-data"
+            >
+              <div class="profile-info">
+                <div class="profile-column">
+                  <div class="info">
+                    <label for="username">Username:</label>
+                    <input
+                      type="text"
+                      id="username"
+                      name="username"
+                      value="<%= user.username %>"
+                      readonly
+                    />
+                  </div>
+                  <div class="info">
+                    <label for="firstName">First Name:</label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      value="<%= user.firstName %>"
+                      readonly
+                    />
+                  </div>
+                  <div class="info">
+                    <label for="lastName">Last Name:</label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      value="<%= user.lastName %>"
+                      readonly
+                    />
+                  </div>
+                </div>
+                <div class="profile-column">
+                  <div class="info">
+                    <label for="email">Email:</label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value="<%= user.email %>"
+                      readonly
+                    />
+                  </div>
+                  <div class="info">
+                    <label for="bio">Bio:</label>
+                    <textarea id="bio" name="bio" rows="3" readonly>
+<%= user.bio || '' %></textarea
+                    >
+                  </div>
+                  <div class="info">
+                    <label>Joined:</label>
+                    <p><%= new Date(user.createdAt).toLocaleDateString() %></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="upload-section d-none" id="uploadSection">
+                <label for="profilePicture">Change Profile Picture</label>
                 <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  value="<%= user.username %>"
-                  readonly
+                  type="file"
+                  id="profilePicture"
+                  name="file"
+                  accept="image/jpeg,image/png"
+                />
+                <div class="file-name" id="fileName"></div>
+              </div>
+
+              <div class="text-center mt-3">
+                <button type="button" id="editButton" class="btn btn-primary">
+                  <i class="bi bi-pencil-square"></i> Edit Profile
+                </button>
+                <button
+                  type="submit"
+                  id="saveButton"
+                  class="btn btn-primary d-none"
+                >
+                  <i class="bi bi-save"></i> Save Changes
+                </button>
+                <button
+                  type="button"
+                  id="cancelButton"
+                  class="btn btn-secondary d-none"
+                >
+                  <i class="bi bi-x-circle"></i> Cancel
+                </button>
+              </div>
+            </form>
+            <% } %>
+          </div>
+
+          <!-- تب تغییر رمز عبور -->
+          <div
+            class="tab-pane fade"
+            id="change-password"
+            role="tabpanel"
+            aria-labelledby="change-password-tab"
+          >
+            <form
+              id="changePasswordForm"
+              action="/user/change-password"
+              method="POST"
+              class="change-password-form"
+            >
+              <div class="form-group">
+                <label for="currentPassword">Current Password:</label>
+                <input
+                  type="password"
+                  id="currentPassword"
+                  name="currentPassword"
+                  class="form-control"
+                  placeholder="Enter your current password"
+                  required
                 />
               </div>
-              <div class="info">
-                <label for="firstName">First Name:</label>
+              <div class="form-group">
+                <label for="newPassword">New Password:</label>
                 <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  value="<%= user.firstName %>"
-                  readonly
+                  type="password"
+                  id="newPassword"
+                  name="newPassword"
+                  class="form-control"
+                  placeholder="Enter your new password"
+                  required
                 />
               </div>
-              <div class="info">
-                <label for="lastName">Last Name:</label>
+              <div class="form-group">
+                <label for="confirmNewPassword">Confirm New Password:</label>
                 <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  value="<%= user.lastName %>"
-                  readonly
+                  type="password"
+                  id="confirmNewPassword"
+                  name="confirmNewPassword"
+                  class="form-control"
+                  placeholder="Confirm your new password"
+                  required
                 />
               </div>
+              <div class="text-center mt-3">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-lock-fill"></i> Change Password
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- تب Posts -->
+          <div
+            class="tab-pane fade posts-tab"
+            id="posts"
+            role="tabpanel"
+            aria-labelledby="posts-tab"
+          >
+            <!-- دکمه ایجاد پست جدید -->
+            <div class="text-center mb-3">
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="createPostButton"
+              >
+                <i class="bi bi-plus-circle"></i> Create New Post
+              </button>
             </div>
 
-            <!-- ستون سمت راست -->
-            <div class="profile-column">
-              <div class="info">
-                <label for="email">Email:</label>
+            <!-- فرم ایجاد پست -->
+            <form
+              id="createPostForm"
+              action="/user/create-post"
+              method="POST"
+              enctype="multipart/form-data"
+              class="create-post-form d-none"
+            >
+              <div class="form-group">
+                <label for="postTitle">Title:</label>
                 <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value="<%= user.email %>"
-                  readonly
+                  type="text"
+                  id="postTitle"
+                  name="title"
+                  class="form-control"
+                  placeholder="Enter post title"
+                  required
                 />
               </div>
-              <div class="info">
-                <label for="bio">Bio:</label>
-                <textarea id="bio" name="bio" rows="3" readonly>
-<%= user.bio || '' %></textarea
+              <div class="form-group">
+                <label for="postContent">Content:</label>
+                <textarea
+                  id="postContent"
+                  name="content"
+                  class="form-control"
+                  rows="4"
+                  placeholder="Enter post content"
+                  required
+                ></textarea>
+              </div>
+              <div class="upload-section">
+                <label for="postCover">Add Cover Image (optional):</label>
+                <input
+                  type="file"
+                  id="postCover"
+                  name="file"
+                  accept="image/jpeg,image/png"
+                />
+                <div class="file-name" id="postFileName"></div>
+              </div>
+              <div class="text-center mt-3">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-check-circle"></i> Create Post
+                </button>
+                <button
+                  type="button"
+                  id="cancelPostButton"
+                  class="btn btn-secondary"
+                >
+                  <i class="bi bi-x-circle"></i> Cancel
+                </button>
+              </div>
+            </form>
+
+            <!-- فرم ویرایش پست -->
+            <% if (posts && posts.length > 0) { %> <% posts.forEach(post => { %>
+            <form
+              id="editPostForm-<%= post.id %>"
+              action="/user/edit-post/<%= post.id %>"
+              method="POST"
+              enctype="multipart/form-data"
+              class="edit-post-form d-none"
+            >
+              <div class="form-group">
+                <label for="editPostTitle-<%= post.id %>">Title:</label>
+                <input
+                  type="text"
+                  id="editPostTitle-<%= post.id %>"
+                  name="title"
+                  class="form-control"
+                  value="<%= post.title %>"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="editPostContent-<%= post.id %>">Content:</label>
+                <textarea
+                  id="editPostContent-<%= post.id %>"
+                  name="content"
+                  class="form-control"
+                  rows="4"
+                  required
+                >
+<%= post.content %></textarea
                 >
               </div>
-              <div class="info">
-                <label>Joined:</label>
-                <p><%= new Date(user.createdAt).toLocaleDateString() %></p>
+              <div class="upload-section">
+                <label for="editPostCover-<%= post.id %>"
+                  >Change Cover Image (optional):</label
+                >
+                <input
+                  type="file"
+                  id="editPostCover-<%= post.id %>"
+                  name="file"
+                  accept="image/jpeg,image/png"
+                />
+                <div
+                  class="file-name"
+                  id="editPostFileName-<%= post.id %>"
+                ></div>
               </div>
+              <div class="text-center mt-3">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-check-circle"></i> Save Changes
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary cancel-edit"
+                  data-post-id="<%= post.id %>"
+                >
+                  <i class="bi bi-x-circle"></i> Cancel
+                </button>
+              </div>
+            </form>
+            <% }) %> <% } %>
+
+            <!-- نمایش پست‌ها -->
+            <div class="posts-list">
+              <% if (posts && posts.length > 0) { %> <% posts.forEach(post => {
+              %>
+              <div class="post-card" id="post-<%= post.id %>">
+                <!-- تصویر کاور (سمت چپ) -->
+                <% if (post.cover) { %>
+                <img src="<%= post.cover %>" alt="Post Cover" />
+                <% } else { %>
+                <div
+                  style="
+                    width: 150px;
+                    height: 150px;
+                    background-color: #e9ecef;
+                    border-radius: 8px;
+                    flex-shrink: 0;
+                  "
+                ></div>
+                <% } %>
+
+                <!-- متن و اطلاعات پست (سمت راست) -->
+                <div class="post-content">
+                  <div>
+                    <h5><%= post.title %></h5>
+                    <p><%= post.content %></p>
+                  </div>
+                  <div class="post-footer">
+                    <div class="post-meta">
+                      <i class="bi bi-calendar3"></i>
+                      <span
+                        >Posted on <%= new
+                        Date(post.createdAt).toLocaleDateString() %></span
+                      >
+                    </div>
+                    <div class="post-actions">
+                      <button
+                        class="btn btn-primary btn-sm edit-post"
+                        data-post-id="<%= post.id %>"
+                      >
+                        <i class="bi bi-pencil-square"></i> Edit
+                      </button>
+                      <form
+                        action="/user/delete-post/<%= post.id %>"
+                        method="POST"
+                        style="display: inline"
+                      >
+                        <button type="submit" class="btn btn-danger btn-sm">
+                          <i class="bi bi-trash"></i> Delete
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <% }) %> <% } else { %>
+              <div class="alert alert-info" role="alert">
+                You haven't created any posts yet.
+              </div>
+              <% } %>
             </div>
           </div>
-
-          <!-- دکمه‌های ویرایش و ذخیره -->
-          <div class="text-center mt-3">
-            <button type="button" id="editButton" class="btn btn-primary">
-              <i class="bi bi-pencil-square"></i> Edit Profile
-            </button>
-            <button
-              type="submit"
-              id="saveButton"
-              class="btn btn-primary d-none"
-            >
-              <i class="bi bi-save"></i> Save Changes
-            </button>
-            <button
-              type="button"
-              id="cancelButton"
-              class="btn btn-secondary d-none"
-            >
-              <i class="bi bi-x-circle"></i> Cancel
-            </button>
-          </div>
-        </form>
-        <% } %>
+        </div>
       </div>
     </div>
 
@@ -220,18 +687,29 @@
       const editButton = document.getElementById("editButton");
       const saveButton = document.getElementById("saveButton");
       const cancelButton = document.getElementById("cancelButton");
+      const uploadSection = document.getElementById("uploadSection");
+      const profilePictureInput = document.getElementById("profilePicture");
+      const fileNameDisplay = document.getElementById("fileName");
       const inputs = document.querySelectorAll(
-        "#profileForm input, #profileForm textarea"
+        "#profileForm input:not([type='file']), #profileForm textarea"
       );
 
-      // ذخیره مقادیر اولیه برای لغو تغییرات
+      const createPostButton = document.getElementById("createPostButton");
+      const createPostForm = document.getElementById("createPostForm");
+      const cancelPostButton = document.getElementById("cancelPostButton");
+      const postCoverInput = document.getElementById("postCover");
+      const postFileNameDisplay = document.getElementById("postFileName");
+
+      const editPostButtons = document.querySelectorAll(".edit-post");
+      const cancelEditButtons = document.querySelectorAll(".cancel-edit");
+
+      // ذخیره مقادیر اولیه برای لغو تغییرات پروفایل
       const originalValues = {};
       inputs.forEach((input) => {
         originalValues[input.id] = input.value;
       });
 
       editButton.addEventListener("click", () => {
-        // فعال کردن حالت ویرایش
         inputs.forEach((input) => {
           input.removeAttribute("readonly");
           input.style.backgroundColor = "#fff";
@@ -239,10 +717,10 @@
         editButton.classList.add("d-none");
         saveButton.classList.remove("d-none");
         cancelButton.classList.remove("d-none");
+        uploadSection.classList.remove("d-none");
       });
 
       cancelButton.addEventListener("click", () => {
-        // لغو تغییرات و برگشت به حالت اولیه
         inputs.forEach((input) => {
           input.setAttribute("readonly", "readonly");
           input.style.backgroundColor = "#e9ecef";
@@ -251,6 +729,86 @@
         editButton.classList.remove("d-none");
         saveButton.classList.add("d-none");
         cancelButton.classList.add("d-none");
+        uploadSection.classList.add("d-none");
+        profilePictureInput.value = "";
+        fileNameDisplay.style.display = "none";
+        fileNameDisplay.textContent = "";
+      });
+
+      profilePictureInput.addEventListener("change", () => {
+        if (profilePictureInput.files.length > 0) {
+          fileNameDisplay.textContent = `Selected: ${profilePictureInput.files[0].name}`;
+          fileNameDisplay.style.display = "block";
+        } else {
+          fileNameDisplay.style.display = "none";
+          fileNameDisplay.textContent = "";
+        }
+      });
+
+      // مدیریت فرم ایجاد پست
+      createPostButton.addEventListener("click", () => {
+        createPostForm.classList.remove("d-none");
+        createPostButton.classList.add("d-none");
+      });
+
+      cancelPostButton.addEventListener("click", () => {
+        createPostForm.classList.add("d-none");
+        createPostButton.classList.remove("d-none");
+        createPostForm.reset();
+        postFileNameDisplay.style.display = "none";
+        postFileNameDisplay.textContent = "";
+      });
+
+      postCoverInput.addEventListener("change", () => {
+        if (postCoverInput.files.length > 0) {
+          postFileNameDisplay.textContent = `Selected: ${postCoverInput.files[0].name}`;
+          postFileNameDisplay.style.display = "block";
+        } else {
+          postFileNameDisplay.style.display = "none";
+          postFileNameDisplay.textContent = "";
+        }
+      });
+
+      // مدیریت فرم ویرایش پست
+      editPostButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const postId = button.getAttribute("data-post-id");
+          const postCard = document.getElementById(`post-${postId}`);
+          const editForm = document.getElementById(`editPostForm-${postId}`);
+          const editCoverInput = document.getElementById(
+            `editPostCover-${postId}`
+          );
+          const editFileNameDisplay = document.getElementById(
+            `editPostFileName-${postId}`
+          );
+
+          postCard.classList.add("d-none");
+          editForm.classList.remove("d-none");
+          createPostButton.classList.add("d-none");
+
+          editCoverInput.addEventListener("change", () => {
+            if (editCoverInput.files.length > 0) {
+              editFileNameDisplay.textContent = `Selected: ${editCoverInput.files[0].name}`;
+              editFileNameDisplay.style.display = "block";
+            } else {
+              editFileNameDisplay.style.display = "none";
+              editFileNameDisplay.textContent = "";
+            }
+          });
+        });
+      });
+
+      cancelEditButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const postId = button.getAttribute("data-post-id");
+          const postCard = document.getElementById(`post-${postId}`);
+          const editForm = document.getElementById(`editPostForm-${postId}`);
+
+          postCard.classList.remove("d-none");
+          editForm.classList.add("d-none");
+          createPostButton.classList.remove("d-none");
+          editForm.reset();
+        });
       });
     </script>
 
