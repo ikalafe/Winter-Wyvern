@@ -14,7 +14,12 @@ const port = 2000;
 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "statics")));
+app.use(express.json());
+// app.use(express.static(path.join(__dirname, "statics")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+app.use(express.static("public"));
+app.set("view engine", "ejs");
 
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
