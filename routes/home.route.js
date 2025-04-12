@@ -11,8 +11,8 @@ router.get("/", requireAuth, async (req, res) => {
       throw new Error("User ID is not defined in request.");
     }
 
-    const users = await User.findAll();
-    const loggedInUser = await User.findOne({ where: { id: req.userId } });
+    const loggedInUser = req.user;
+    const isAdmin = loggedInUser.role == "admin";
 
     const posts = await Post.findAll({
       limit: 10,
@@ -36,27 +36,34 @@ router.get("/", requireAuth, async (req, res) => {
       summarizedContent: summarizeContent(post.content, 10),
     }));
 
+    let users = [];
+    if (isAdmin) {
+      users = await User.findAll();
+    }
+
     const successMessage = req.query.success || null;
     const errorMessage = req.query.error || null;
 
     res.render("home", {
-      users: users,
       posts: summarizedPosts,
+      users: users,
+      isAdmin: isAdmin,
+      user: loggedInUser,
       errorMessage: errorMessage,
       successMessage: successMessage,
       searchQuery: "",
-      user: loggedInUser,
     });
   } catch (error) {
     console.log(error);
 
     res.render("home", {
-      users: null,
       posts: [],
-      errorMessage: "An error occurred while fetching users.",
+      users: [],
+      isAdmin: false,
+      user: null,
+      errorMessage: "An error occurred while fetching data.",
       successMessage: null,
       searchQuery: "",
-      user: null,
     });
   }
 });
@@ -67,17 +74,24 @@ router.get("/search", requireAuth, async (req, res) => {
       throw new Error("User ID is not defined in request.");
     }
 
+    const loggedInUser = req.user;
+    const isAdmin = loggedInUser.role == "admin";
+
     const searchQuery = req.query.search || "";
     console.log("Search Query:", searchQuery);
-    const users = await User.findAll({
-      where: {
-        [Op.or]: [
-          { firstName: { [Op.like]: `%${searchQuery}%` } },
-          { lastName: { [Op.like]: `%${searchQuery}%` } },
-          { email: { [Op.like]: `%${searchQuery}%` } },
-        ],
-      },
-    });
+
+    let users = [];
+    if (isAdmin) {
+      users = await User.findAll({
+        where: {
+          [Op.or]: [
+            { firstName: { [Op.like]: `%${searchQuery}%` } },
+            { lastName: { [Op.like]: `%${searchQuery}%` } },
+            { email: { [Op.like]: `%${searchQuery}%` } },
+          ],
+        },
+      });
+    }
 
     const posts = await Post.findAll({
       limit: 10,
@@ -101,29 +115,28 @@ router.get("/search", requireAuth, async (req, res) => {
       summarizedContent: summarizeContent(post.content, 10),
     }));
 
-    console.log("Found Users:", users);
-    const loggedInUser = await User.findOne({ where: { id: req.userId } });
-
     const successMessage = req.query.success || null;
     const errorMessage = req.query.error || null;
 
     res.render("home", {
-      users: users,
       posts: summarizedPosts,
+      users: users,
+      isAdmin: isAdmin,
+      user: loggedInUser,
       errorMessage: errorMessage,
       successMessage: successMessage,
       searchQuery: searchQuery,
-      user: loggedInUser,
     });
   } catch (error) {
     console.log("Error in /home/search route:", error.message);
     res.render("home", {
-      users: null,
       posts: [],
-      errorMessage: "An error occurred while searching users: " + error.message,
+      users: [],
+      isAdmin: false,
+      user: null,
+      errorMessage: "An error occurred while searching: " + error.message,
       successMessage: null,
       searchQuery: req.query.search || "",
-      user: null,
     });
   }
 });
