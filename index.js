@@ -8,6 +8,7 @@ const sequelize = require("./database/sequelize-connect");
 const authRoutes = require("./routes/auth.route");
 const userRoutes = require("./routes/user.route");
 const homeRoutes = require("./routes/home.route");
+const adminRoutes = require("./routes/admin.route");
 
 const app = express();
 const port = 2000;
@@ -15,6 +16,7 @@ const port = 2000;
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(requireAuth);
 // app.use(express.static(path.join(__dirname, "statics")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -24,6 +26,7 @@ app.set("view engine", "ejs");
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/home", homeRoutes);
+app.use("/admin", adminRoutes);
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
